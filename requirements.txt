@@ -1,0 +1,11 @@
+flask
+flask_login
+flask_cors
+flask_sqlalchemy
+werkzeug
+opencv-python
+torch
+torchvision
+numpy
+sklearn
+
