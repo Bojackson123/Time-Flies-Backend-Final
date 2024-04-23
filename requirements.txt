@@ -7,5 +7,6 @@ opencv-python
 torch
 torchvision
 numpy
-sklearn
+scikit-learn
+metplotlib
 
