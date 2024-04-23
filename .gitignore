@@ -12,7 +12,9 @@ training_pickle
 
 test_results
 
-uploads
+uploads/ai_results/*
+
+uploads/graphJSONData/*
 
 video_frames
 
