@@ -12,10 +12,6 @@ training_pickle
 
 test_results
 
-uploads/ai_results/*
-
-uploads/graphJSONData/*
-
 video_frames
 
 __pychache__
