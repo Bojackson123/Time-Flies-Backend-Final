@@ -9,4 +9,6 @@ This is the back end and AI model for the Time Flies website: https://time-flies
 
 3.) Run the command "python main.py" for windows and "python3 main.py" for linux and macOS script to start the back-end server
 
+    *** ENSURE GPU HARDWARE ACCELERATION IS ON IN YOUR BROWSERS SETTINGS ***
 4.) Go to https://time-flies-frontend.vercel.app/ to start using the web application! 
+
