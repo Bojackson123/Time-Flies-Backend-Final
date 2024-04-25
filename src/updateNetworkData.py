@@ -63,7 +63,7 @@ class ExportUpdateNetworkData:
             'charts': [
                 # Network States
                 {
-                    'name': 'Features',
+                    'name': 'Salient Features',
                     'x_label': 'Frames',
                     'y_label': 'Network States',
                     'data': self.prepare_net_states_data()
@@ -71,81 +71,94 @@ class ExportUpdateNetworkData:
                 
                 # Euclidean Distances
                 {
-                    'name': 'Euclidean Distance - Layer 0',
+                    'name': 'Euclidean Distance - Conv2',
                     'x_label': 'Frames',
                     'y_label': 'Layer 0',
                     'data': {
                         'x': time_serialized,
                         'y1': distances_serialized[0],
+                        'label1': 'Conv2',
                         'y2': distances_serialized["T0"],
-                    }
+                        'label2': 'Threshold',
+                    },
+                    
                 },
                 {
-                    'name': 'Euclidean Distance - Layer 1',
+                    'name': 'Euclidean Distance - Pool5',
                     'x_label': 'Frames',
                     'y_label': 'Layer 1',
                     'data': {
                         'x': time_serialized,
                         'y1': distances_serialized[1],
+                        'label1': 'Pool5',
                         'y2': distances_serialized["T1"],
+                        'label2': 'Threshold',
                     }
                 },
                 {
-                    'name': 'Euclidean Distance - Layer 2',
+                    'name': 'Euclidean Distance - Fc7',
                     'x_label': 'Frames',
                     'y_label': 'Layer 2',
                     'data': {
                         'x': time_serialized,
                         'y1': distances_serialized[2],
+                        'label1': 'Fc7',
                         'y2': distances_serialized["T2"],
+                        'label2': 'Threshold',
                     }
                 },
                 {
-                    'name': 'Euclidean Distance - Layer 3',
+                    'name': 'Euclidean Distance - Output Prob',
                     'x_label': 'Frames',
                     'y_label': 'Layer 3',
                     'data': {
                         'x': time_serialized,
                         'y1': distances_serialized[3],
+                        'label1': 'Output Prob',
                         'y2': distances_serialized["T3"],
+                        'label2': 'Threshold',
                     }
                 },
                 
                 # Salient Features
                 {
-                    'name': 'Salient Features - Layer 0',
+                    'name': 'Accumulation - Conv2',
                     'x_label': 'Frames',
                     'y_label': 'Layer 0',
                     'data': {
                         'x': time_serialized,
                         'y': salient_features_serialized[0],
+                        'label': 'Conv2',
                     }
                 },
                 {
-                    'name': 'Salient Features - Layer 1',
+                    'name': 'Accumulation - Pool5',
                     'x_label': 'Frames',
                     'y_label': 'Layer 1',
                     'data': {
                         'x': time_serialized,
                         'y': salient_features_serialized[1],
+                        'label': 'Pool5',
                     }
                 },
                 {
-                    'name': 'Salient Features - Layer 2',
+                    'name': 'Accumulation - Fc7',
                     'x_label': 'Frames',
                     'y_label': 'Layer 2',
                     'data': {
                         'x': time_serialized,
                         'y': salient_features_serialized[2],
+                        'label': 'Fc7',
                     }
                 },
                 {
-                    'name': 'Salient Features - Layer 3',
+                    'name': 'Accumulation - Output Prob',
                     'x_label': 'Frames',
                     'y_label': 'Layer 3',
                     'data': {
                         'x': time_serialized,
                         'y': salient_features_serialized[3],
+                        'label': 'Output Prob',
                     }
                 },
                 # Real Time vs Estimated Time
