@@ -30,7 +30,7 @@ class AlexNet:
         ])
 
         # Load labels
-        self.labels = np.loadtxt('alexnet/synset_words.txt', str, delimiter='\t')
+        self.labels = np.loadtxt('../alexnet/synset_words.txt', str, delimiter='\t')
 
         # Initialize states and features dictionaries
         self.states = {n: [] for n in range(1000)}

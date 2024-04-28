@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, send_from_directory, current_app,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db, Video
-from analyze_video import analyze_video
 from joblib import dump, load
 import os
 import cv2
@@ -10,7 +9,21 @@ import re
 import shutil
 import uuid
 
+import sys
+sys.path.append('..')
+from analyze_video import analyze_video
+
 def extract_and_save_first_frame(video_path, output_folder):
+    """
+    Extracts the first frame from a video and saves it as an image.
+
+    Args:
+        video_path (str): Path to the video file.
+        output_folder (str): Path to the folder where the image will be saved.
+
+    Returns:
+        str: Filename of the saved image if successful, None otherwise.
+    """
     # Capture the video
     cap = cv2.VideoCapture(video_path)
     success, image = cap.read()
@@ -30,6 +43,16 @@ def extract_and_save_first_frame(video_path, output_folder):
 videos_bp = Blueprint('videos', __name__)
 
 def convert_video_to_frames(video_path, save_dir):
+    """
+    Converts a video into individual frames and saves them in a directory.
+
+    Args:
+        video_path (str): Path to the video file.
+        save_dir (str): Path to the directory where the frames will be saved.
+
+    Returns:
+        float: Original FPS (frames per second) of the video.
+    """
     # Make sure the save directory exists
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -67,11 +90,15 @@ ALLOWED_VIDEO_MIME_TYPES = set([
     'video/quicktime',  # Add or remove MIME types as necessary
 ])
 
-
-
 @videos_bp.route('/upload', methods=['POST'])
 @login_required
 def upload_video():
+    """
+    Endpoint for uploading a video file.
+
+    Returns:
+        Response: JSON response containing the status of the upload.
+    """
     # Check if the request contains a file
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400

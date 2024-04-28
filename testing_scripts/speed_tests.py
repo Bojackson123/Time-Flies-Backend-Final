@@ -1,5 +1,5 @@
 import time
-from analyze_video import analyze_video
+from api.analyze_video import analyze_video
 import cv2, os
 
 def convert_video_to_frames(video_path, save_dir):

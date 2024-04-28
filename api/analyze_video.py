@@ -19,12 +19,117 @@ from src.updateNetworkData import ExportUpdateNetworkData
 import warnings
 warnings.filterwarnings("ignore")
 
+def analyze_video(frames):
+    """
+    Analyzes a video by processing each frame and predicting the time using a trained regression model.
+
+    Args:
+        frames (str): The directory path containing the frames of the video.
+
+    Returns:
+        tuple: A tuple containing two dictionaries. The first dictionary contains the figures generated for each attention value, and the second dictionary contains the JSON data exported for each attention value.
+    """
+    # Load the frames from the given directory
+    frame_paths = [os.path.join(frames, file) for file in os.listdir(frames) if file.endswith(".png")]
+
+    # Load the trained regression model
+    models_list = load('../pretrained_regression/regression_model.joblib')
     
+    # Initialize the AlexNet model and create a dictionary to store the figures and JSON data
+    alexnet = AlexNet()
+    figures = {}
+    json_datas = {}
+    
+    # Different attention % of baseline values
+    c_values = [1/.5, 1/1, 1/1.5, 1/2]
+    upNets = {}
+    params_list = {}
+    
+    # Create an instance of Parameters and UpdateNetwork for each C value
+    name_counter = 0.0
+    for c in c_values:
+        name_counter += 1.0
+        param = Parameters(C=c)
+        params_list[c] = param.params
+        upNets[name_counter] = UpdateNetwork(params_list[c])
+
+    for frame_path in frame_paths:
+        # Load the frame and shape it
+        frame = cv2.imread(frame_path)
+        frame = shape_frame(frame)
+
+        # Run the frame through the AlexNet to get the distances at each layer
+        label = alexnet.run(frame)
+
+        # Run the frame through each UpdateNetwork instance and calculate the accumulators
+        for c, upNet in upNets.items():
+            upNet.run(frame, alexnet.features, alexnet.output_prob, alexnet.states, alexnet.labels)
+
+    # Pull the accumulator values from each UpdateNetwork instance and predict the time
+    for c, upNet in upNets.items():
+        # Convert the accumulator values to a 1x4 array
+        acc = list(upNet.accumulator.values())
+        acc_array = np.array(acc).reshape(1, -1)
+        
+        estimate = average_predict(models_list, acc_array)
+        
+        # Plots the graphs and exports the data to JSON
+        figure = upNet.plot(alexnet.states, alexnet.labels, False, estimate)
+        figures[c] = figure
+        
+        export = ExportUpdateNetworkData(upNet)
+        json_datas[c] = export.to_json()
+    
+    # Return the figures and JSON data for each attention value as a dict
+    return figures, json_datas
+
+def average_predict(models, X_new):
+    """
+    Makes predictions with all models and averages the predictions.
+
+    Args:
+        models (list): A list of trained regression models.
+        X_new (ndarray): The input data for prediction.
+
+    Returns:
+        ndarray: The averaged predictions.
+    """
+    # Make predictions with all models
+    predictions = np.array([model.predict(X_new) for model in models])
+    # Average the predictions across all models
+    return np.mean(predictions, axis=0)    
+
+def shape_frame(frame):
+    """
+    Shapes the frame to a square by cropping the longer side.
+
+    Args:
+        frame (ndarray): The input frame.
+
+    Returns:
+        ndarray: The shaped frame.
+    """
+    if np.shape(frame)[0] > np.shape(frame)[1]:
+        onset = np.shape(frame)[0] - np.shape(frame)[1]
+        return frame[int(onset/2):-int(onset/2), :]
+    elif np.shape(frame)[0] < np.shape(frame)[1]:
+        onset = np.shape(frame)[1] - np.shape(frame)[0]
+        return frame[:, int(onset/2):-int(onset/2), :]
+    return frame    
+
 
 def calculate_accumulators(frames):
+    """
+    Calculates the accumulators for a set of frames.
+
+    Args:
+        frames (str): The directory path containing the frames.
+
+    Returns:
+        tuple: A tuple containing the accumulator values and the estimated time.
+    """
     frame_path = frames
     
-     
     params = Parameters().params
     params['visuals'] = True
     alexnet = AlexNet()
@@ -32,7 +137,6 @@ def calculate_accumulators(frames):
     t = 0
     
     while len(frame_path) > 0:
-            
         frame = cv2.imread(frame_path.pop(0))
         t += 1
         if np.shape(frame)[0] > np.shape(frame)[1]:
@@ -49,46 +153,13 @@ def calculate_accumulators(frames):
     time = t / params['FPS']
     return acc, time
 
-# def mean_normalized_error(y_true, y_pred):
-#     normalized_errors = abs(y_true - y_pred) / y_true.mean()
-#     return normalized_errors.mean()
-
-# def pretrain_regression():
-#     file_x_path = 'training_pickle/training_x.pkl'
-#     with open(file_x_path, 'rb') as file:
-#         x_train_list = pickle.load(file)
-   
-#     file_y_path = 'training_pickle/training_y.pkl'
-#     with open(file_y_path, 'rb') as file:
-#         y_train_list = pickle.load(file)
-    
-#     all_x = np.array(x_train_list)
-#     all_y = np.array(y_train_list)
-    
-#     print("Training data shape:", all_x.shape, all_y.shape)
-#     mean_normalized_error_scorer = make_scorer(mean_normalized_error, greater_is_better=False)
-#     # Define the model and parameters to search
-#     model = SVR()
-#     param_grid = {
-#         'kernel': ['rbf'],
-#         'C': [1e-1, 1e-2, 1e-3, 1e-4, 1e0, 1e1, 1e2, 1e3],
-#         'gamma': ['scale', 'auto', 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6],
-#         'epsilon': [0, 0.1, 0.01, 0.001, 0.0001]
-#     }
-
-#     grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=10, scoring="r2",verbose=2, n_jobs=5)
-#     grid_search.fit(all_x, all_y)
-
-#     print("Best parameters:", grid_search.best_params_)
-#     print("Best score:", grid_search.best_score_)
-
-#     best_model = grid_search.best_estimator_
-    
-#     return 
-
-
 def pretrain_regression():
-    
+    """
+    Pretrains a regression model using the training data.
+
+    Returns:
+        list: A list of trained regression models.
+    """
     file_x_path = 'training_pickle/training_x.pkl'
     with open(file_x_path, 'rb') as file:
         x_train_list = pickle.load(file)
@@ -208,11 +279,7 @@ def pretrain_regression():
 
 #     return model
     
-def average_predict(models, X_new):
-    # Make predictions with all models
-    predictions = np.array([model.predict(X_new) for model in models])
-    # Average the predictions across all models
-    return np.mean(predictions, axis=0)      
+  
 
 # # TESTING CODE
 # def analyze_video(frames, models_list):
@@ -266,69 +333,4 @@ def average_predict(models, X_new):
 #     return figure, json_data
 
 
-# PRODUCTION CODE
-def analyze_video(frames):
-    
-    # Load the frames from the given directory
-    frame_paths = [os.path.join(frames, file) for file in os.listdir(frames) if file.endswith(".png")]
 
-    # Load the trained regression model
-    models_list = load('pretrained_regression/regression_model.joblib')
-    
-    # Initialize the AlexNet model and create a dictionary to store the figures and JSON data
-    alexnet = AlexNet()
-    figures = {}
-    json_datas = {}
-    
-    # Different attention % of baseline values
-    c_values = [1/.5, 1/1, 1/1.5, 1/2]
-    upNets = {}
-    params_list = {}
-    
-    # Create an instance of Parameters and UpdateNetwork for each C value
-    name_counter = 0.0
-    for c in c_values:
-        name_counter += 1.0
-        param = Parameters(C=c)
-        params_list[c] = param.params
-        upNets[name_counter] = UpdateNetwork(params_list[c])
-
-    for frame_path in frame_paths:
-        # Load the frame and shape it
-        frame = cv2.imread(frame_path)
-        frame = shape_frame(frame)
-
-        # Run the frame through the AlexNet to get the distances at each layer
-        label = alexnet.run(frame)
-
-        # Run the frame through each UpdateNetwork instance and calculate the accumulators
-        for c, upNet in upNets.items():
-            upNet.run(frame, alexnet.features, alexnet.output_prob, alexnet.states, alexnet.labels)
-
-    # Pull the accumulator values from each UpdateNetwork instance and predict the time
-    for c, upNet in upNets.items():
-        # Convert the accumulator values to a 1x4 array
-        acc = list(upNet.accumulator.values())
-        acc_array = np.array(acc).reshape(1, -1)
-        
-        estimate = average_predict(models_list, acc_array)
-        
-        # Plots the graphs and exports the data to JSON
-        figure = upNet.plot(alexnet.states, alexnet.labels, False, estimate)
-        figures[c] = figure
-        
-        export = ExportUpdateNetworkData(upNet)
-        json_datas[c] = export.to_json()
-    
-    # Return the figures and JSON data for each attention value as a dict
-    return figures, json_datas
-
-# Shapes the frame to a square by cropping the longer side
-def shape_frame(frame):
-    if np.shape(frame)[0] > np.shape(frame)[1]:
-        onset = np.shape(frame)[0] - np.shape(frame)[1]
-        return frame[int(onset/2):-int(onset/2), :]
-    elif np.shape(frame)[0] < np.shape(frame)[1]:
-        onset = np.shape(frame)[1] - np.shape(frame)[0]
-        return frame[:, int(onset/2):-int(onset/2), :]
-    return frame

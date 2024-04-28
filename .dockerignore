@@ -15,3 +15,7 @@ test_results
 uploads
 
 video_frames
+
+.vscode
+
+__pycache__

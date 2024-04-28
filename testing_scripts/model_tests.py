@@ -1,5 +1,5 @@
 import os, cv2, csv, pickle, json
-from analyze_video import pretrain_regression, analyze_video, calculate_accumulators
+from api.analyze_video import pretrain_regression, analyze_video, calculate_accumulators
 from joblib import dump, load
 
 
