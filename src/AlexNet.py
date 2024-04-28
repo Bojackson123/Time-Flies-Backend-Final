@@ -1,5 +1,8 @@
 import sys, numpy as np, caffe, urllib.request, os.path
+"""
+OLD VERSION OF ALEXNET CLASS MUST BE RAN WITH DOCKERFILE IF ON WINDOWS
 
+"""
 """
 data   - 	(10, 3, 227, 227) 	   length 154587
 conv1  - 	(10, 96, 55, 55) 	   length 290400

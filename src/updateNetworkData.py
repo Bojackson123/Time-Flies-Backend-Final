@@ -2,11 +2,38 @@ import json
 import numpy as np
 
 class ExportUpdateNetworkData:
+    """
+    A class that exports the data from the updateNetworkInstance for charting.
+
+    Attributes:
+        updateNetworkInstance (object): An instance of the updateNetwork class.
+
+    Methods:
+        _serialize_numpy_array(obj): Recursively searches for numpy arrays and float32 in the object and converts them to lists or native floats.
+        prepare_net_states_data(): Prepares the network states data for charting.
+        prepare_chart_data(): Prepares the data for charting in the specified structure.
+        to_json(): Converts the updateNetwork instance data to a JSON string suitable for charting, using the prepared chart data.
+    """
+
     def __init__(self, updateNetworkInstance):
+        """
+        Initializes an instance of ExportUpdateNetworkData.
+
+        Args:
+            updateNetworkInstance (object): An instance of the updateNetwork class.
+        """
         self.updateNetworkInstance = updateNetworkInstance
 
     def _serialize_numpy_array(self, obj):
-        """Recursively searches for numpy arrays and float32 in the object and converts them to lists or native floats."""
+        """
+        Recursively searches for numpy arrays and float32 in the object and converts them to lists or native floats.
+
+        Args:
+            obj (object): The object to be serialized.
+
+        Returns:
+            object: The serialized object.
+        """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         elif isinstance(obj, np.float32):  # Convert np.float32 to Python float
@@ -19,6 +46,12 @@ class ExportUpdateNetworkData:
             return obj
         
     def prepare_net_states_data(self):
+        """
+        Prepares the network states data for charting.
+
+        Returns:
+            dict: The prepared network states data.
+        """
         net_states_serialized = self._serialize_numpy_array(self.updateNetworkInstance.states)
         net_labels_serialized = self._serialize_numpy_array(self.updateNetworkInstance.net_labels)
         time_serialized = self._serialize_numpy_array(self.updateNetworkInstance.time)
@@ -45,19 +78,19 @@ class ExportUpdateNetworkData:
         
         return net_states_with_labels
                     
-                    
-                
-        
-
     def prepare_chart_data(self):
-        """Prepares data for charting in the specified structure."""
+        """
+        Prepares the data for charting in the specified structure.
+
+        Returns:
+            dict: The prepared chart data.
+        """
         time_serialized = self._serialize_numpy_array(self.updateNetworkInstance.time)
         real_time_serialized = self._serialize_numpy_array(round((time_serialized / 30), 1)) 
         last_estimation_serialized = self._serialize_numpy_array(self.updateNetworkInstance.last_estimation[0])
         distances_serialized = self._serialize_numpy_array(self.updateNetworkInstance.distances)
         salient_features_serialized = self._serialize_numpy_array(self.updateNetworkInstance.salientFeatures)
         
-
         # Define your charts here
         chart_data = {
             'charts': [
@@ -176,7 +209,12 @@ class ExportUpdateNetworkData:
         return chart_data
 
     def to_json(self):
-        """Converts the updateNetwork instance data to a JSON string suitable for charting, using the prepared chart data."""
+        """
+        Converts the updateNetwork instance data to a JSON string suitable for charting, using the prepared chart data.
+
+        Returns:
+            str: The JSON string representation of the chart data.
+        """
         chart_data = self.prepare_chart_data()
         return json.dumps(chart_data, indent=4)
 

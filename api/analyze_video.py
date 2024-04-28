@@ -19,6 +19,7 @@ from src.updateNetworkData import ExportUpdateNetworkData
 import warnings
 warnings.filterwarnings("ignore")
 
+# PRODUCTION CODE
 def analyze_video(frames):
     """
     Analyzes a video by processing each frame and predicting the time using a trained regression model.
@@ -27,7 +28,8 @@ def analyze_video(frames):
         frames (str): The directory path containing the frames of the video.
 
     Returns:
-        tuple: A tuple containing two dictionaries. The first dictionary contains the figures generated for each attention value, and the second dictionary contains the JSON data exported for each attention value.
+        tuple: A tuple containing two dictionaries. The first dictionary contains the figures generated for each attention value, 
+        and the second dictionary contains the JSON data exported for each attention value.
     """
     # Load the frames from the given directory
     frame_paths = [os.path.join(frames, file) for file in os.listdir(frames) if file.endswith(".png")]

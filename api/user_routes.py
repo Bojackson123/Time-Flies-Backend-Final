@@ -30,7 +30,6 @@ def is_logged_in():
 @users_bp.route('/get_user', methods=['GET'])
 @login_required
 def get_user():
-    # Assuming current_user is available and represents the logged-in user
     user = current_user
     user_details = {
         'id': user.id,
@@ -119,7 +118,6 @@ def update_user():
 @users_bp.route('/update_password', methods=['POST'])
 @login_required
 def update_password():
-    # With Flask-Login, current_user is the model instance for the currently logged-in user
     user = current_user
     data = request.get_json()
     current_password = data.get('currentPassword')

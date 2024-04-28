@@ -8,12 +8,12 @@ __status__ = "Published"
 
 import numpy as np
 
-"""
-This class reads a timeseries of distances between snapshots of alexnet activation
-(one timeseries for each layer for each trial) and calculates accumulators for
-each layer.
-"""
-class Accummulators :
+class Accummulators:
+    """
+    This class reads a timeseries of distances between snapshots of alexnet activation
+    (one timeseries for each layer for each trial) and calculates accumulators for
+    each layer.
+    """
 
     # ------ ATTENTION PARAMETERS ---------------------------------------------
     params = dict()
@@ -23,17 +23,28 @@ class Accummulators :
     params['Trand'] = 50.0
     params['Trand_m'] = 0.0
 
+    def calculate(self, distances = [[], [], [], []], extra_dp_freq = 0.0):
+        """
+        Calculates the accumulators for each layer based on the given distances.
 
-    def calculate(self, distances = [[], [], [], []], extra_dp_freq = 0.0) :
+        Parameters:
+        - distances (list): A list of lists containing the distances between snapshots of alexnet activation.
+                            Each inner list represents the distances for a specific layer.
+        - extra_dp_freq (float): The frequency of adding extra data points from the middle of the trial.
 
+        Returns:
+        - accumulator (list): A list containing the accumulators for each layer.
+        - plot_y (dict): A dictionary containing the threshold values for each layer at each time step.
+        - extra_dp (dict): A dictionary containing the extra data points added from the middle of the trial.
+        """
         accumulator = [0.0, 0.0, 0.0, 0.0]
         last_t = {0 : 0.0, 1 : 0.0, 2 : 0.0, 3 : 0.0}
         thres = list(self.params['Tmax']['d2'])
         plot_y = {0 : [], 1 : [], 2 : [], 3 : []}
         extra_dp = {'x' : [], 'y' : []}
 
-        for time in range(len(distances[0])) :
-            for layer in range(4) :
+        for time in range(len(distances[0])):
+            for layer in range(4):
                 dist = distances[layer][time]
 
                 # Calculate attention threshold
@@ -43,7 +54,7 @@ class Accummulators :
                 thres[layer] = thres[layer] - ((Tmax-Tmin)/self.params['Ttau'][layer])*np.exp(-D/self.params['Ttau'][layer]) + np.random.normal(self.params['Trand_m'],(Tmax-Tmin)/self.params['Trand'])
 
                 # Reset feature accumulators
-                if  dist >= thres[layer] :
+                if dist >= thres[layer]:
                     last_t[layer] = time
                     thres[layer] = Tmax
                     accumulator[layer] += 1
@@ -51,7 +62,7 @@ class Accummulators :
                 plot_y[layer].append(thres[layer])
 
             # Add extra data points from the middle of the trial if requested
-            if np.random.rand() < extra_dp_freq :
+            if np.random.rand() < extra_dp_freq:
                 extra_dp['x'].append([accumulator[i] for i in range(len(accumulator))])
                 extra_dp['y'].append(time/30.0)
 

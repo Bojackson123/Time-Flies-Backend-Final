@@ -7,9 +7,38 @@ import numpy as np
 
 
 class AlexNet:
+    """
+    A class representing the AlexNet model for image classification.
+
+    Attributes:
+        BUFF_SIZE (int): The buffer size for storing states and accumulated states.
+        features (dict): A dictionary to store the features of the model.
+        output_prob (torch.Tensor): The output probabilities of the model.
+        device (torch.device): The device on which the model is loaded.
+        model (torchvision.models.AlexNet): The pretrained AlexNet model.
+        transform (torchvision.transforms.Compose): The image transformations.
+        labels (numpy.ndarray): The labels for the classes.
+        states (dict): A dictionary to store the states of the model.
+        acc_states (dict): A dictionary to store the accumulated states of the model.
+        hooks (list): A list to store the hooks for capturing layer outputs.
+
+    Methods:
+        __init__(): Initializes the AlexNet model.
+        _register_hook(layer, name): Registers a forward hook to capture and store the output of a layer.
+        preprocess_image(frame): Preprocesses the image for model input.
+        run(frame): Classifies the image and manages application state.
+    """
+
     BUFF_SIZE = 10000
 
     def __init__(self):
+        """
+        Initializes the AlexNet model.
+
+        Loads the pretrained AlexNet model, sets it to evaluation mode,
+        defines the image transformations, loads the labels, and initializes
+        the states and features dictionaries.
+        """
         self.features = dict()
         self.output_prob = None
 
@@ -46,7 +75,14 @@ class AlexNet:
 
     def _register_hook(self, layer, name):
         """
-        Register a forward hook to capture and store the output of a layer
+        Register a forward hook to capture and store the output of a layer.
+
+        Args:
+            layer (torch.nn.Module): The layer to register the hook on.
+            name (str): The name of the layer.
+
+        Returns:
+            None
         """
         handle = layer.register_forward_hook(
             lambda module, input, output: self.features.update({name: output.detach()})
@@ -54,12 +90,28 @@ class AlexNet:
         self.hooks.append(handle)
 
     def preprocess_image(self, frame):
-        """Preprocess the image for model input."""
+        """
+        Preprocess the image for model input.
+
+        Args:
+            frame (numpy.ndarray or PIL.Image.Image): The input image frame.
+
+        Returns:
+            torch.Tensor: The preprocessed image tensor.
+        """
         image = Image.fromarray(frame) if not isinstance(frame, Image.Image) else frame
         return self.transform(image).unsqueeze(0).to(self.device)
 
     def run(self, frame):
-        """Classify the image and manage application state."""
+        """
+        Classify the image and manage application state.
+
+        Args:
+            frame (numpy.ndarray or PIL.Image.Image): The input image frame.
+
+        Returns:
+            str: The predicted label for the image.
+        """
         image = self.preprocess_image(frame).to(self.device)
 
         with torch.no_grad():

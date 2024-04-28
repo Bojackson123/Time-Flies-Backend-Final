@@ -12,7 +12,24 @@ import os, json
 
 def plotExperiment(t, salientFeatures, last_estimation, pictures,
                    distances, params, save_it, states, labels, real_time) :
+    """
+    Plot the experiment results.
 
+    Parameters:
+    - t (int): The current time step.
+    - salientFeatures (list): A list of salient features.
+    - last_estimation (float): The last estimation value.
+    - pictures (list): A list of pictures.
+    - distances (list): A list of distances.
+    - params (dict): A dictionary of parameters.
+    - save_it (bool): A flag indicating whether to save the plot.
+    - states (dict): A dictionary of states.
+    - labels (list): A list of labels.
+    - real_time (bool): A flag indicating whether to plot in real time.
+
+    Returns:
+    - fig (matplotlib.figure.Figure): The generated figure.
+    """
     if t == 0 or not real_time:
         fig = plt.figure(figsize=(15,10))
         if real_time :
@@ -35,23 +52,11 @@ def plotExperiment(t, salientFeatures, last_estimation, pictures,
                              color=p[0].get_color())
     plt.ylim(0, 1)
 
-
-
     plt.subplot(232)
     if pictures != [] :
         plt.imshow(pictures[-1])
         if len(salientFeatures[3]) > 0 :
             plt.title("Feature:" + str(salientFeatures[3][-1]))
-
-
-    # for i in range(len(pictures)) :
-    #     if i < 24 :
-    #         plt.subplot(9, 9, int(7 + i%3 + 9*(i/3)))
-    #         plt.imshow(pictures[i])
-    #         plt.xticks([])
-    #         plt.yticks([])
-
-
 
     for i in range(4) :
         plt.subplot(8,3,13+3*(3-i))
@@ -89,7 +94,6 @@ def plotExperiment(t, salientFeatures, last_estimation, pictures,
     plt.legend()
 
     print("Time:", real_time_now, "Estimation:", last_estimation)
-    
     
     return fig
    

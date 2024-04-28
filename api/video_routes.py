@@ -14,16 +14,6 @@ sys.path.append('..')
 from analyze_video import analyze_video
 
 def extract_and_save_first_frame(video_path, output_folder):
-    """
-    Extracts the first frame from a video and saves it as an image.
-
-    Args:
-        video_path (str): Path to the video file.
-        output_folder (str): Path to the folder where the image will be saved.
-
-    Returns:
-        str: Filename of the saved image if successful, None otherwise.
-    """
     # Capture the video
     cap = cv2.VideoCapture(video_path)
     success, image = cap.read()
@@ -43,16 +33,6 @@ def extract_and_save_first_frame(video_path, output_folder):
 videos_bp = Blueprint('videos', __name__)
 
 def convert_video_to_frames(video_path, save_dir):
-    """
-    Converts a video into individual frames and saves them in a directory.
-
-    Args:
-        video_path (str): Path to the video file.
-        save_dir (str): Path to the directory where the frames will be saved.
-
-    Returns:
-        float: Original FPS (frames per second) of the video.
-    """
     # Make sure the save directory exists
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -87,18 +67,12 @@ ALLOWED_VIDEO_MIME_TYPES = set([
     'video/mp4',
     'video/avi',
     'video/mpeg',
-    'video/quicktime',  # Add or remove MIME types as necessary
+    'video/quicktime',
 ])
 
 @videos_bp.route('/upload', methods=['POST'])
 @login_required
 def upload_video():
-    """
-    Endpoint for uploading a video file.
-
-    Returns:
-        Response: JSON response containing the status of the upload.
-    """
     # Check if the request contains a file
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
@@ -188,8 +162,6 @@ def get_video(video_id):
         # If the video doesn't exist or doesn't belong to the current user, return a 404 error
         abort(404, description="Video not found or access is denied.")
 
-    # Assuming you're serving the video file itself or a page with the video embedded
-    # You might want to return the file's URL, its metadata, or render a template
     video_data = {
         "id": video.id,
         "title": video.title,
@@ -207,7 +179,6 @@ def serve_video(video_id):
     # Look up the video by ID
     video = Video.query.get_or_404(video_id)
 
-    # Construct the full path to the video file
     video_path = os.path.join('uploads/', video.filename)
     
     range_header = request.headers.get('Range', None)
@@ -263,7 +234,6 @@ def analyze(video_id):
     video = Video.query.get(video_id)
     if video:
         # Construct the file path
-        #video_title_with_underscores = video.title.replace(" ", "_")
         video_path = os.path.join(current_app.config['UPLOAD_FOLDER'], video.filename)
         print(video_path)
         
@@ -307,7 +277,6 @@ def analyze(video_id):
 def get_graph_data(video_id, attention):
     video = Video.query.get(video_id)
     if not video or not video.graphJSONData:
-        # Video not found or no graph data file available
         return jsonify({'error': 'Graph data file not found'}), 401
     print(True)
     
