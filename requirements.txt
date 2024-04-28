@@ -8,5 +8,5 @@ torch
 torchvision
 numpy
 scikit-learn
-metplotlib
+matplotlib
 
